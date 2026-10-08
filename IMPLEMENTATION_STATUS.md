@@ -1,0 +1,1 @@
+Prototype status: This source is not yet validated on Kodular or a physical Android device. The AIX build workflow is intentionally a placeholder until a compatible compiler is configured. Do not treat compilation as proof of functionality.
