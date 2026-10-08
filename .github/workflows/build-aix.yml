@@ -1,0 +1,31 @@
+name: Build GikkuNavigation AIX
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Build GikkuNavigation AIX
+        id: build
+        uses: pavi2410/AIX-Action@main
+        with:
+          source-dir: src
+          package-name: com.gikku.navigation
+          appinventor-repo: mit-cml/appinventor-sources
+          appinventor-branch: master
+      - name: Upload AIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: GikkuNavigation-aix
+          path: ${{ steps.build.outputs.extension-path }}
+          if-no-files-found: error
