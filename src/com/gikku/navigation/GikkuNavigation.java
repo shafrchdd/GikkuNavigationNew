@@ -35,7 +35,7 @@ public class GikkuNavigation extends AndroidNonvisibleComponent implements Locat
     manager=(LocationManager)activity.getSystemService(Context.LOCATION_SERVICE);
     container.$form().registerForOnDestroy(this);
   }
-  private void emit(String code,String message) { ui.post(()->NavigationError(code,message)); }
+  private void emit(String code,String message) { ui.post(new Runnable(){@Override public void run(){NavigationError(code,message);}}); }
   @SimpleEvent public void NavigationError(String code,String message){EventDispatcher.dispatchEvent(this,"NavigationError",code,message);}
   @SimpleEvent public void SearchResults(String json){EventDispatcher.dispatchEvent(this,"SearchResults",json);}
   @SimpleEvent public void DestinationSet(String value){EventDispatcher.dispatchEvent(this,"DestinationSet",value);}
@@ -69,9 +69,9 @@ public class GikkuNavigation extends AndroidNonvisibleComponent implements Locat
   }
   @SimpleFunction public void SetDestination(String value){
     if(value==null||!valid(value))return;
-    destination=value.trim();ui.post(()->DestinationSet(destination));
+    destination=value.trim();ui.post(new Runnable(){@Override public void run(){DestinationSet(destination);}});
   }
-  private void changed(){String s=GetStops();ui.post(()->StopsChanged(s));}
+  private void changed(){String s=GetStops();ui.post(new Runnable(){@Override public void run(){StopsChanged(s);}});}
   @SimpleFunction public void AddStop(String value){if(value==null||!valid(value))return;synchronized(stops){stops.add(value.trim());}changed();}
   @SimpleFunction public void RemoveStop(int index){synchronized(stops){if(index<1||index>stops.size()){emit("INVALID_STOP_INDEX","Stop index is outside the list.");return;}stops.remove(index-1);}changed();}
   @SimpleFunction public void ClearStops(){synchronized(stops){stops.clear();}changed();}
@@ -120,7 +120,7 @@ public class GikkuNavigation extends AndroidNonvisibleComponent implements Locat
     if(key.isEmpty()){emit("API_KEY_MISSING","SetApiKey must be called first.");return;}
     if(query==null||query.trim().isEmpty()){emit("INVALID_RESPONSE","Search query cannot be empty.");return;}
     final String q=query.trim();
-    pool.execute(()->{
+    pool.execute(new Runnable(){@Override public void run(){
       try{
         JSONObject result=post("https://places.googleapis.com/v1/places:searchText",new JSONObject().put("textQuery",q).put("pageSize",20),"places.displayName,places.formattedAddress,places.id,places.location");
         JSONArray places=result.optJSONArray("places"),out=new JSONArray();
@@ -128,9 +128,9 @@ public class GikkuNavigation extends AndroidNonvisibleComponent implements Locat
           JSONObject p=places.getJSONObject(i),loc=p.optJSONObject("location"),name=p.optJSONObject("displayName");
           out.put(new JSONObject().put("name",name==null?"":name.optString("text","")).put("address",p.optString("formattedAddress","")).put("placeId",p.optString("id","")).put("latitude",loc==null?JSONObject.NULL:loc.opt("latitude")).put("longitude",loc==null?JSONObject.NULL:loc.opt("longitude")));
         }
-        String json=out.toString();ui.post(()->SearchResults(json));
+        String json=out.toString();ui.post(new Runnable(){@Override public void run(){SearchResults(json);}});
       }catch(Exception ex){fail(ex);}
-    });
+    }});
   }
   private static double seconds(String s){
     if(s==null||!s.endsWith("s"))return 0;
@@ -172,9 +172,9 @@ public class GikkuNavigation extends AndroidNonvisibleComponent implements Locat
           }
           ol.put("steps",outSteps);outLegs.put(ol);
         }
-        out.put("legs",outLegs);String json=out.toString();ui.post(()->RouteReady(json));
+        out.put("legs",outLegs);String json=out.toString();ui.post(new Runnable(){@Override public void run(){RouteReady(json);}});
       }catch(Exception ex){fail(ex);}
       finally{calculating.set(false);}
-    });
+    }});
   }
 }
