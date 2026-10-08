@@ -1,0 +1,15 @@
+name: Build AIX (toolchain pending)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+jobs:
+  toolchain-not-configured:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain status
+        run: |
+          echo 'A compatible App Inventor extension compiler has not been configured.'
+          echo 'No .aix artifact is produced by this workflow.'
+          exit 1
